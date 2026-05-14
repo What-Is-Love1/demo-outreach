@@ -1,0 +1,13 @@
+{
+  "name": "demo-outreach",
+  "version": "1.0.0",
+  "description": "AI-powered cold outreach: scrape companies → generate personalized messages",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "scrape": "node src/scraper.js",
+    "generate": "node src/generator.js"
+  },
+  "author": "Vlad",
+  "license": "MIT"
+}
