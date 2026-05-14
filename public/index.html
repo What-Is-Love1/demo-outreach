@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Outreach AI — Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --border: #2a2d3a;
+    --text: #e4e4e7;
+    --muted: #71717a;
+    --accent: #6366f1;
+    --accent-hover: #818cf8;
+    --green: #22c55e;
+    --red: #ef4444;
+    --orange: #f59e0b;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+  
+  /* Header */
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; }
+  .header h1 { font-size: 24px; font-weight: 600; }
+  .header h1 span { color: var(--accent); }
+  .stats { display: flex; gap: 24px; }
+  .stat { text-align: center; }
+  .stat-value { font-size: 28px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; }
+  
+  /* Form */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+  }
+  .form-row { display: flex; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .form-group { flex: 1; min-width: 200px; }
+  .form-group label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  input, select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 60px; }
+  .btn {
+    padding: 10px 24px;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+  }
+  .btn:hover { background: var(--accent-hover); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-sm { padding: 4px 12px; font-size: 12px; }
+  .btn-copy { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+  .btn-copy:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
+  .btn-copy.copied { border-color: var(--green); color: var(--green); }
+  
+  /* Progress */
+  .progress { display: none; margin-bottom: 24px; }
+  .progress.active { display: block; }
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    animation: pulse 1.5s ease-in-out infinite;
+    width: 40%;
+  }
+  @keyframes pulse { 0%,100% { opacity: 0.5; transform: translateX(-60%); } 50% { opacity: 1; transform: translateX(160%); } }
+  .progress-text { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  
+  /* Results */
+  .results { display: grid; gap: 16px; }
+  .result-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+  .result-card:hover { border-color: var(--accent); }
+  .result-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+  .result-company { font-size: 16px; font-weight: 600; }
+  .result-url { font-size: 12px; color: var(--muted); }
+  .result-contacts { display: flex; gap: 16px; margin-bottom: 12px; flex-wrap: wrap; }
+  .result-contact { font-size: 13px; color: var(--muted); }
+  .result-contact a { color: var(--accent); text-decoration: none; }
+  .result-message {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    position: relative;
+  }
+  .result-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .badge-ok { background: rgba(34,197,94,0.15); color: var(--green); }
+  .badge-error { background: rgba(239,68,68,0.15); color: var(--red); }
+  
+  /* History */
+  .history { margin-top: 32px; }
+  .history h2 { font-size: 18px; margin-bottom: 16px; color: var(--muted); }
+  .history-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+  .history-item:hover { border-color: var(--accent); }
+  .history-query { flex: 1; font-weight: 500; }
+  .history-meta { font-size: 13px; color: var(--muted); }
+  
+  /* Empty state */
+  .empty { text-align: center; padding: 48px; color: var(--muted); }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1><span>Outreach</span> AI</h1>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-value" id="totalRuns">0</div>
+        <div class="stat-label">Запусков</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="totalCompanies">0</div>
+        <div class="stat-label">Компаний</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value" id="totalMessages">0</div>
+        <div class="stat-label">Сообщений</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="form-card">
+    <form id="pipelineForm">
+      <div class="form-row">
+        <div class="form-group" style="flex:3">
+          <label>Поисковый запрос</label>
+          <input type="text" id="query" placeholder="строительная компания Москва" required>
+        </div>
+        <div class="form-group" style="flex:0.5; min-width:80px">
+          <label>Кол-во</label>
+          <input type="number" id="num" value="5" min="1" max="20">
+        </div>
+        <div class="form-group" style="flex:1">
+          <label>Шаблон</label>
+          <select id="template">
+            <option value="telegram">Telegram DM</option>
+            <option value="email">Email</option>
+            <option value="upwork">Upwork Proposal</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group" style="flex:1">
+          <label>Оффер (что предлагаем)</label>
+          <textarea id="offer" placeholder="AI-бот для бизнеса: отвечает на вопросы клиентов 24/7..."></textarea>
+        </div>
+      </div>
+      <div class="form-row" style="justify-content: flex-end; margin-bottom: 0;">
+        <button type="submit" class="btn" id="runBtn">Запустить pipeline</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="progress" id="progress">
+    <div class="progress-bar"><div class="progress-fill"></div></div>
+    <div class="progress-text" id="progressText">Ищу компании...</div>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <div class="history" id="historySection" style="display:none">
+    <h2>История запусков</h2>
+    <div id="historyList"></div>
+  </div>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+let currentRunId = null;
+let pollInterval = null;
+
+// Form submit
+$('pipelineForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const query = $('query').value.trim();
+  if (!query) return;
+
+  $('runBtn').disabled = true;
+  $('runBtn').textContent = 'Работаю...';
+  $('progress').classList.add('active');
+  $('progressText').textContent = 'Ищу компании...';
+  $('results').innerHTML = '';
+
+  try {
+    const res = await fetch('/api/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        query,
+        num: parseInt($('num').value) || 5,
+        template: $('template').value,
+        offer: $('offer').value || undefined,
+      }),
+    });
+    const data = await res.json();
+    currentRunId = data.id;
+    pollInterval = setInterval(pollResults, 2000);
+  } catch (err) {
+    $('progressText').textContent = 'Ошибка: ' + err.message;
+    resetForm();
+  }
+});
+
+async function pollResults() {
+  if (!currentRunId) return;
+  try {
+    const res = await fetch(`/api/run/${currentRunId}`);
+    const run = await res.json();
+
+    const total = run.num || 5;
+    const done = run.results?.length || 0;
+    $('progressText').textContent = run.status === 'done'
+      ? `Готово: ${done} компаний обработано`
+      : `Обрабатываю: ${done}/${total}...`;
+
+    renderResults(run.results || []);
+
+    if (run.status === 'done' || run.status === 'error') {
+      clearInterval(pollInterval);
+      $('progress').classList.remove('active');
+      resetForm();
+      loadHistory();
+    }
+  } catch {}
+}
+
+function renderResults(results) {
+  $('results').innerHTML = results.map((r, i) => `
+    <div class="result-card">
+      <div class="result-header">
+        <div>
+          <div class="result-company">${esc(r.company)}</div>
+          ${r.url ? `<div class="result-url"><a href="${esc(r.url)}" target="_blank">${esc(r.url)}</a></div>` : ''}
+        </div>
+        <span class="badge ${r.status === 'ok' ? 'badge-ok' : 'badge-error'}">${r.status === 'ok' ? 'OK' : 'Error'}</span>
+      </div>
+      <div class="result-contacts">
+        ${r.emails?.length ? r.emails.map(e => `<span class="result-contact">📧 <a href="mailto:${esc(e)}">${esc(e)}</a></span>`).join('') : ''}
+        ${r.phone ? `<span class="result-contact">📞 ${esc(r.phone)}</span>` : ''}
+      </div>
+      ${r.message ? `
+        <div class="result-message">${esc(r.message)}</div>
+        <div class="result-actions">
+          <button class="btn btn-sm btn-copy" onclick="copyMsg(this, ${i})">Копировать</button>
+        </div>
+      ` : `<div class="result-message" style="color:var(--red)">${esc(r.error || 'Unknown error')}</div>`}
+    </div>
+  `).join('');
+}
+
+function copyMsg(btn, idx) {
+  const cards = document.querySelectorAll('.result-message');
+  if (cards[idx]) {
+    navigator.clipboard.writeText(cards[idx].textContent);
+    btn.textContent = 'Скопировано!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Копировать'; btn.classList.remove('copied'); }, 2000);
+  }
+}
+
+function resetForm() {
+  $('runBtn').disabled = false;
+  $('runBtn').textContent = 'Запустить pipeline';
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/history');
+    const runs = await res.json();
+    
+    let totalRuns = runs.length;
+    let totalCompanies = 0;
+    let totalMessages = 0;
+    runs.forEach(r => {
+      totalCompanies += r.results?.length || 0;
+      totalMessages += r.results?.filter(x => x.status === 'ok').length || 0;
+    });
+    
+    $('totalRuns').textContent = totalRuns;
+    $('totalCompanies').textContent = totalCompanies;
+    $('totalMessages').textContent = totalMessages;
+
+    if (runs.length === 0) {
+      $('historySection').style.display = 'none';
+      return;
+    }
+    $('historySection').style.display = 'block';
+    $('historyList').innerHTML = runs.map(r => `
+      <div class="history-item" onclick="loadRun('${r.id}')">
+        <span class="history-query">${esc(r.query)}</span>
+        <span class="history-meta">${r.results?.length || 0} компаний</span>
+        <span class="history-meta">${r.template || 'telegram'}</span>
+        <span class="badge ${r.status === 'done' ? 'badge-ok' : 'badge-error'}">${r.status}</span>
+      </div>
+    `).join('');
+  } catch {}
+}
+
+async function loadRun(id) {
+  try {
+    const res = await fetch(`/api/run/${id}`);
+    const run = await res.json();
+    renderResults(run.results || []);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } catch {}
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+loadHistory();
+</script>
+</body>
+</html>

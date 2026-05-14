@@ -4,10 +4,13 @@
   "description": "AI-powered cold outreach: scrape companies → generate personalized messages",
   "main": "src/index.js",
   "scripts": {
-    "start": "node src/index.js",
+    "start": "node src/server.js",
     "scrape": "node src/scraper.js",
     "generate": "node src/generator.js"
   },
   "author": "Vlad",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
 }
